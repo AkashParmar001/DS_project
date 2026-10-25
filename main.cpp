@@ -39,39 +39,155 @@ static void printBanner() {
 }
 
 static void printMainMenu() {
-    cout << "\n";
-    cout << "  =================================================\n";
-    cout << "                    MAIN MENU\n";
-    cout << "  =================================================\n";
-    cout << "   METRO SYSTEM\n";
-    cout << "  -------------------------------------------------\n";
-    cout << "   1.  Display All Stations\n";
-    cout << "   2.  Search Station\n";
-    cout << "   3.  Add Station\n";
-    cout << "   4.  Delete Station\n";
-    cout << "   5.  Add Connection (Edge)\n";
-    cout << "   6.  Display Metro Network\n";
-    cout << "   7.  Find Route — BFS (fewest stops)\n";
-    cout << "   8.  Explore Network — DFS\n";
-    cout << "  -------------------------------------------------\n";
-    cout << "   PASSENGER & HISTORY\n";
-    cout << "  -------------------------------------------------\n";
-    cout << "   9.  Passenger Queue Management\n";
-    cout << "  10.  Route History (Stack)\n";
-    cout << "  -------------------------------------------------\n";
-    cout << "   DATA STRUCTURES LAB\n";
-    cout << "  -------------------------------------------------\n";
-    cout << "  11.  Linked List Demonstrations\n";
-    cout << "  12.  Expression Calculator & Stack Demos\n";
-    cout << "  13.  Tree Operations (BST / AVL / B-Tree / B+)\n";
-    cout << "  14.  Sorting & Searching\n";
-    cout << "  15.  Hash Table Operations\n";
-    cout << "  16.  Minimum Spanning Tree (Prim's & Kruskal's)\n";
-    cout << "  17.  DS Lab — Advanced Demonstrations\n";
-    cout << "  -------------------------------------------------\n";
-    cout << "   0.  Exit\n";
-    cout << "  =================================================\n";
+    cout << "\n  --- MAIN MENU ---\n";
+    cout << "  1. Stations        — add / delete / search / display\n";
+    cout << "  2. Routes          — find route (BFS), explore (DFS)\n";
+    cout << "  3. Passenger       — queue & route history\n";
+    cout << "  4. Display Network — adjacency list / matrix / sparse\n";
+    cout << "  5. DS Lab          — linked lists, stacks, trees, sorting, hashing, MST\n";
+    cout << "  0. Exit\n";
     cout << "  Enter choice: ";
+}
+
+static void stationsMenu(MetroGraph& metro) {
+    int choice;
+    do {
+        cout << "\n  --- Stations ---\n";
+        cout << "  1. Display All Stations\n";
+        cout << "  2. Search Station\n";
+        cout << "  3. Add Station\n";
+        cout << "  4. Delete Station\n";
+        cout << "  5. Add Connection (Edge)\n";
+        cout << "  0. Back\n";
+        cout << "  Choice: ";
+        cin >> choice;
+        switch (choice) {
+        case 1:
+            metro.displayAllStations();
+            break;
+
+        case 2:
+            metro.searchStation();
+            break;
+
+        case 3: {
+            int id;
+            string name, zone;
+            cout << "\n  New Station ID   : "; cin >> id;
+            cout << "  New Station Name : "; cin.ignore(); getline(cin, name);
+            cout << "  Zone (A/B/C)     : "; getline(cin, zone);
+            if (metro.addStation(id, name, zone))
+                cout << "  [OK] Station \"" << name << "\" added.\n";
+            break;
+        }
+
+        case 4: {
+            int id;
+            cout << "\n  Station ID to delete: "; cin >> id;
+            metro.deleteStation(id);
+            break;
+        }
+
+        case 5: {
+            int fromId, toId, weight;
+            cout << "\n  From Station ID : "; cin >> fromId;
+            cout << "  To   Station ID : "; cin >> toId;
+            cout << "  Weight (km)     : "; cin >> weight;
+            if (metro.addEdge(fromId, toId, weight))
+                cout << "  [OK] Connection added.\n";
+            break;
+        }
+
+        case 0: break;
+        default: cout << "  [ERROR] Invalid choice.\n";
+        }
+    } while (choice != 0);
+}
+
+static void routesMenu(MetroGraph& metro, ArrayStack& routeHistory) {
+    int choice;
+    do {
+        cout << "\n  --- Routes ---\n";
+        cout << "  1. Find Route — BFS (fewest stops)\n";
+        cout << "  2. Explore Network — DFS\n";
+        cout << "  0. Back\n";
+        cout << "  Choice: ";
+        cin >> choice;
+        switch (choice) {
+        case 1: {
+            // BFS — push result onto route history stack
+            // bfsRoute() handles its own cin.ignore() before getline calls,
+            // so the buffer is clean when we return here.
+            metro.bfsRoute();
+            string rec;
+            cout << "\n  Save this route to history? (y/n): ";
+            getline(cin, rec);
+            if (rec == "y" || rec == "Y") {
+                cout << "  Label for history (e.g. Central->Airport): ";
+                getline(cin, rec);
+                routeHistory.push(rec);
+                cout << "  [HISTORY] Saved.\n";
+            }
+            break;
+        }
+
+        case 2:
+            metro.dfsExplore();
+            break;
+
+        case 0: break;
+        default: cout << "  [ERROR] Invalid choice.\n";
+        }
+    } while (choice != 0);
+}
+
+static void passengerMenu(ArrayStack& routeHistory) {
+    int choice;
+    do {
+        cout << "\n  --- Passenger ---\n";
+        cout << "  1. Passenger Queue Management\n";
+        cout << "  2. Route History (Stack)\n";
+        cout << "  0. Back\n";
+        cout << "  Choice: ";
+        cin >> choice;
+        switch (choice) {
+        case 1: passengerQueueMenu();          break;
+        case 2: routeHistoryMenu(routeHistory); break;
+        case 0: break;
+        default: cout << "  [ERROR] Invalid choice.\n";
+        }
+    } while (choice != 0);
+}
+
+static void mstMenu(MetroGraph& metro);
+static void dsAdvancedMenu(MetroGraph& metro);
+
+static void dsLabMenu(MetroGraph& metro) {
+    int choice;
+    do {
+        cout << "\n  --- DS Lab ---\n";
+        cout << "  1. Linked List Demonstrations\n";
+        cout << "  2. Expression Calculator & Stack Demos\n";
+        cout << "  3. Tree Operations (BST / AVL / B-Tree / B+)\n";
+        cout << "  4. Sorting & Searching\n";
+        cout << "  5. Hash Table Operations\n";
+        cout << "  6. Minimum Spanning Tree (Prim's & Kruskal's)\n";
+        cout << "  7. Advanced Demonstrations (Units 1-6)\n";
+        cout << "  0. Back\n";
+        cout << "  Choice: ";
+        cin >> choice;
+        switch (choice) {
+        case 1: linkedListDemoMenu();          break;
+        case 2: expressionCalculatorMenu();    break;
+        case 3: treeAlgorithmsMenu();          break;
+        case 4: sortingSearchingMenu();        break;
+        case 5: hashingMenu();                 break;
+        case 6: mstMenu(metro);                break;
+        case 7: dsAdvancedMenu(metro);         break;
+        case 0: break;
+        default: cout << "  [ERROR] Invalid choice.\n";
+        }
+    } while (choice != 0);
 }
 
 // ───────────────────────────────────────────────────────────────
@@ -130,7 +246,7 @@ static void mstMenu(MetroGraph& metro) {
 //    Sparse matrix, memory layout, Tower of Hanoi,
 //    General tree conversion, Directed/weighted graph notes
 // ───────────────────────────────────────────────────────────────
-static void dsLabMenu(MetroGraph& metro) {
+static void dsAdvancedMenu(MetroGraph& metro) {
     int choice;
     do {
         cout << "\n";
@@ -297,109 +413,11 @@ int main() {
 
         switch (choice) {
 
-        // ── METRO SYSTEM ────────────────────────────────────
-
-        case 1:
-            metro.displayAllStations();
-            break;
-
-        case 2:
-            metro.searchStation();
-            break;
-
-        case 3: {
-            int id;
-            string name, zone;
-            cout << "\n  New Station ID   : "; cin >> id;
-            cout << "  New Station Name : "; cin.ignore(); getline(cin, name);
-            cout << "  Zone (A/B/C)     : "; getline(cin, zone);
-            if (metro.addStation(id, name, zone))
-                cout << "  [OK] Station \"" << name << "\" added.\n";
-            break;
-        }
-
-        case 4: {
-            int id;
-            cout << "\n  Station ID to delete: "; cin >> id;
-            metro.deleteStation(id);
-            break;
-        }
-
-        case 5: {
-            int fromId, toId, weight;
-            cout << "\n  From Station ID : "; cin >> fromId;
-            cout << "  To   Station ID : "; cin >> toId;
-            cout << "  Weight (km)     : "; cin >> weight;
-            if (metro.addEdge(fromId, toId, weight))
-                cout << "  [OK] Connection added.\n";
-            break;
-        }
-
-        case 6:
-            networkDisplayMenu(metro);
-            break;
-
-        case 7:
-            // BFS — push result onto route history stack
-            // bfsRoute() handles its own cin.ignore() before getline calls,
-            // so the buffer is clean when we return here.
-            metro.bfsRoute();
-            {
-                string rec;
-                cout << "\n  Save this route to history? (y/n): ";
-                getline(cin, rec);
-                if (rec == "y" || rec == "Y") {
-                    cout << "  Label for history (e.g. Central->Airport): ";
-                    getline(cin, rec);
-                    routeHistory.push(rec);
-                    cout << "  [HISTORY] Saved.\n";
-                }
-            }
-            break;
-
-        case 8:
-            metro.dfsExplore();
-            break;
-
-        // ── PASSENGER & HISTORY ─────────────────────────────
-
-        case 9:
-            passengerQueueMenu();
-            break;
-
-        case 10:
-            routeHistoryMenu(routeHistory);
-            break;
-
-        // ── DS LAB ──────────────────────────────────────────
-
-        case 11:
-            linkedListDemoMenu();
-            break;
-
-        case 12:
-            expressionCalculatorMenu();
-            break;
-
-        case 13:
-            treeAlgorithmsMenu();
-            break;
-
-        case 14:
-            sortingSearchingMenu();
-            break;
-
-        case 15:
-            hashingMenu();
-            break;
-
-        case 16:
-            mstMenu(metro);
-            break;
-
-        case 17:
-            dsLabMenu(metro);
-            break;
+        case 1: stationsMenu(metro);                    break;
+        case 2: routesMenu(metro, routeHistory);        break;
+        case 3: passengerMenu(routeHistory);            break;
+        case 4: networkDisplayMenu(metro);              break;
+        case 5: dsLabMenu(metro);                       break;
 
         case 0:
             cout << "\n  Exiting Metro Train Route Management System.\n";
@@ -407,7 +425,7 @@ int main() {
             break;
 
         default:
-            cout << "  [ERROR] Invalid choice. Enter 0-17.\n";
+            cout << "  [ERROR] Invalid choice. Enter 0-5.\n";
         }
 
     } while (choice != 0);
